@@ -6,12 +6,12 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  // Image,
+  Image,
   Alert,
 } from 'react-native';
-// import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 
-export default function SignUpScreen() {
+export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -20,43 +20,47 @@ export default function SignUpScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
-  // const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
+  const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
 
-  // const handleImagePick = () => {
-  //   launchImageLibrary({ mediaType: 'photo' }, (response) => {
-  //     if (response.assets && response.assets.length > 0) {
-  //       setProfilePic(response.assets[0].uri);
-  //     }
-  //   });
-  // };
+  const handleSignUp = () => {
+  Alert.alert('Account Created', 'You can now log in.');
+  navigation.navigate('Main');
+  };
+
+  const handleImagePick = () => {
+  launchImageLibrary({ mediaType: 'photo' }, (response) => {
+  if (response.assets && response.assets.length > 0) {
+  setProfilePic(response.assets[0].uri);
+  }
+  });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
 
       <View style={styles.row}>
         <TextInput
-          style={[styles.input, { flex: 1, marginRight: 8 }]}
+          style={[styles.input, { flex: 1, marginRight: 20 }]}
           placeholder="First Name"
           value={firstName}
           onChangeText={setFirstName}
         />
 
-        {/* Image upload button removed */}
-        {/* <TouchableOpacity onPress={handleImagePick} style={styles.profileIcon}>
+        {/* Image upload button */}
+        {<TouchableOpacity onPress={handleImagePick} style={styles.profileIcon}>
           {profilePic ? (
             <Image source={{ uri: profilePic }} style={styles.profilePic} />
           ) : (
             <Image
-              source={require('../../Images/blankImageIcon.jpg')} 
+              source={require('../Images/blankImageIcon.jpg')} 
               style={styles.profilePic}
             />
           )}
-        </TouchableOpacity> */}
+        </TouchableOpacity>}
       </View>
 
       <TextInput
-        style={styles.input}
+        style={styles.lastName}
         placeholder="Last Name"
         value={lastName}
         onChangeText={setLastName}
@@ -93,20 +97,14 @@ export default function SignUpScreen() {
         onChangeText={setUsername}
       />
 
-      <View style={styles.passwordWrapper}>
-        <TextInput
-          style={[styles.input, { flex: 1, borderWidth: 0 }]}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={hidePassword}
-        />
-        <TouchableOpacity onPress={() => setHidePassword(!hidePassword)}>
-          <Text style={{ fontSize: 20 }}>{hidePassword ? '👁️' : '🙈'}</Text>
-        </TouchableOpacity>
-      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+      />
 
-      <TouchableOpacity style={styles.signUpBtn}>
+      <TouchableOpacity style={styles.signUpBtn} onPress={handleSignUp}>
         <Text style={styles.signUpText}>Sign Up</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -120,12 +118,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 60,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
   input: {
     backgroundColor: '#f9f9f9',
     borderColor: '#ddd',
@@ -134,33 +126,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 14,
+    marginRight: 10,
+    marginLeft: 10,
+  },
+  lastName: {
+    backgroundColor: '#f9f9f9',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 20,
+    marginRight: 175,
+    marginLeft: 10,
+    marginTop: -60,
   },
   note: {
     fontSize: 12,
     color: '#666',
     marginTop: -10,
     marginBottom: 10,
-    marginLeft: 4,
+    marginLeft: 14,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 14,
   },
-  // profileIcon: {
-  //   width: 70,
-  //   height: 70,
-  //   borderRadius: 35,
-  //   backgroundColor: '#eee',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  // },
-  // profilePic: {
-  //   width: 70,
-  //   height: 70,
-  //   borderRadius: 35,
-  //   resizeMode: 'cover',
-  // },
+  profileIcon: {
+    width: 150,
+    height: 150,
+    borderRadius: 35,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+    marginRight: 5,
+  },
+  profilePic: {
+    width: 150,
+    height: 150,
+    borderRadius: 35,
+    marginTop: 10,
+    marginRight: 10,
+  },
   passwordWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -178,6 +187,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
+    marginLeft: 10,
+    marginRight: 10,
   },
   signUpText: {
     fontSize: 16,
