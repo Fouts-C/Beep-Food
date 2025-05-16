@@ -18,6 +18,8 @@ target 'BeepFoodApp' do
   config = use_native_modules!
 
   use_react_native!(
+    #Helps with Reanimated stability
+    :hermes_enabled => true,
     :path => config[:reactNativePath],
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
