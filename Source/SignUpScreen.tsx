@@ -23,16 +23,33 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
 
   const handleSignUp = () => {
-  Alert.alert('Account Created', 'You can now log in.');
-  navigation.navigate('Main');
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !email.trim() ||
+      !phone.trim() ||
+      !venmo.trim() ||
+      !username.trim() ||
+      !password.trim()
+    ) {
+      Alert.alert('Missing Info', 'Please fill in all fields before continuing.');
+      return;
+    }
+    if (!email.endsWith('.edu')) {
+      Alert.alert('Invalid Email', 'Please use a .edu email address to sign up.');
+      return;
+    }
+
+    Alert.alert('Account Created', 'You can now log in.');
+    navigation.navigate('Login');
   };
 
   const handleImagePick = () => {
-  launchImageLibrary({ mediaType: 'photo' }, (response) => {
-  if (response.assets && response.assets.length > 0) {
-  setProfilePic(response.assets[0].uri);
-  }
-  });
+    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.assets && response.assets.length > 0) {
+        setProfilePic(response.assets[0].uri);
+      }
+    });
   };
 
   return (

@@ -18,7 +18,7 @@ function Login({ navigation }: { navigation: any }): React.JSX.Element {
       Alert.alert('Error', 'Please enter both email and password');
     } else if (email === password) {
       // Temporary login logic
-      navigation.navigate('Main');
+      navigation.navigate('MainDrawer');
     } else {
       Alert.alert('Invalid Credentials', 'Email must match password (for now)');
     }
