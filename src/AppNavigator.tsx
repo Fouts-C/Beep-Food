@@ -8,7 +8,6 @@ import { useColorScheme } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
- const isDarkMode = useColorScheme() === 'dark';
 
 function MainDrawer() {
   return (
@@ -20,6 +19,8 @@ function MainDrawer() {
 }
 
 export default function AppNavigator() {
+  const isDarkMode = useColorScheme() === 'dark';
+
   return (
     <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={Login} />
@@ -27,8 +28,8 @@ export default function AppNavigator() {
         name="SignUp"
         component={SignUpScreen}
         options={{
-            headerShown: true,
-            title: 'Sign Up',        
+          headerShown: true,
+          title: 'Sign Up',
         }}
       />
       <Stack.Screen name="MainDrawer" component={MainDrawer} />

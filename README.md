@@ -1,4 +1,5 @@
-<<<<<<< HEAD
+# Beep-Food
+
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
 # Getting Started
@@ -67,7 +68,7 @@ This is one way to run your app — you can also build it directly from Android 
 
 Now that you have successfully run the app, let's make changes!
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
 
 When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
 
@@ -96,6 +97,3 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
-=======
-# Beep-Food
->>>>>>> 03738c30aadfaa8b56943e63ad6b5a78de683af4

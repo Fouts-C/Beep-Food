@@ -69,7 +69,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
             <Image source={{ uri: profilePic }} style={styles.profilePic} />
           ) : (
             <Image
-              source={require('../Images/blankImageIcon.jpg')} 
+              source={require('../images/blankImageIcon.jpg')}
               style={styles.profilePic}
             />
           )}
