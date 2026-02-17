@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { AuthService } from './services/AuthService';
 
 export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [firstName, setFirstName] = useState('');
@@ -21,8 +23,9 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [password, setPassword] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
   const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (
       !firstName.trim() ||
       !lastName.trim() ||
@@ -35,13 +38,34 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
       Alert.alert('Missing Info', 'Please fill in all fields before continuing.');
       return;
     }
-    if (!email.endsWith('.edu')) {
-      Alert.alert('Invalid Email', 'Please use a .edu email address to sign up.');
-      return;
-    }
 
-    Alert.alert('Account Created', 'You can now log in.');
-    navigation.navigate('Login');
+    setLoading(true);
+    try {
+      await AuthService.signUp({
+        email,
+        password,
+        firstName,
+        lastName,
+        phone,
+        venmoUsername: venmo,
+        username,
+      });
+
+      Alert.alert(
+        'Account Created',
+        'Please check your email to verify your account, then log in.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]
+      );
+    } catch (error: any) {
+      Alert.alert('Sign Up Failed', error.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleImagePick = () => {
@@ -61,10 +85,11 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
           placeholder="First Name"
           value={firstName}
           onChangeText={setFirstName}
+          editable={!loading}
         />
 
         {/* Image upload button */}
-        {<TouchableOpacity onPress={handleImagePick} style={styles.profileIcon}>
+        {<TouchableOpacity onPress={handleImagePick} style={styles.profileIcon} disabled={loading}>
           {profilePic ? (
             <Image source={{ uri: profilePic }} style={styles.profilePic} />
           ) : (
@@ -81,6 +106,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         placeholder="Last Name"
         value={lastName}
         onChangeText={setLastName}
+        editable={!loading}
       />
 
       <TextInput
@@ -89,6 +115,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        editable={!loading}
       />
       <Text style={styles.note}>You must use a .edu email address</Text>
 
@@ -98,6 +125,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        editable={!loading}
       />
 
       <TextInput
@@ -105,6 +133,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         placeholder="Venmo Username"
         value={venmo}
         onChangeText={setVenmo}
+        editable={!loading}
       />
 
       <TextInput
@@ -112,6 +141,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
+        editable={!loading}
       />
 
       <TextInput
@@ -119,10 +149,20 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
+        editable={!loading}
       />
 
-      <TouchableOpacity style={styles.signUpBtn} onPress={handleSignUp}>
-        <Text style={styles.signUpText}>Sign Up</Text>
+      <TouchableOpacity
+        style={[styles.signUpBtn, loading && styles.disabledBtn]}
+        onPress={handleSignUp}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Text style={styles.signUpText}>Sign Up</Text>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -206,6 +246,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10,
     marginRight: 10,
+  },
+  disabledBtn: {
+    opacity: 0.5,
   },
   signUpText: {
     fontSize: 16,
