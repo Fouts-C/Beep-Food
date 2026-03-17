@@ -13,6 +13,8 @@ cd /Users/carsonfouts/Documents/Beep-Food
 npx react-native run-ios --simulator="iPhone 15 Pro" --no-packager
 ```
 
+cmd + space + simulator = "Simulator.app"
+
 
 ## Step 2: Build and run your app
 
