@@ -45,3 +45,7 @@ Then, and every time you update your native dependencies, run:
 ```sh
 bundle exec pod install
 ```
+
+Beep login
+foutscm@appstate.edu
+Carson
