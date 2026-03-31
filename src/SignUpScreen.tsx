@@ -23,6 +23,8 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [password, setPassword] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
   const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
+  const [profilePicBase64, setProfilePicBase64] = useState<string | undefined>(undefined);
+  const [profilePicMimeType, setProfilePicMimeType] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
@@ -49,6 +51,8 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         phone,
         venmoUsername: venmo,
         username,
+        profilePicBase64,
+        profilePicMimeType,
       });
 
       Alert.alert(
@@ -69,9 +73,11 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
   };
 
   const handleImagePick = () => {
-    launchImageLibrary({ mediaType: 'photo' }, (response) => {
+    launchImageLibrary({ mediaType: 'photo', includeBase64: true }, (response) => {
       if (response.assets && response.assets.length > 0) {
         setProfilePic(response.assets[0].uri);
+        setProfilePicBase64(response.assets[0].base64);
+        setProfilePicMimeType(response.assets[0].type);
       }
     });
   };
