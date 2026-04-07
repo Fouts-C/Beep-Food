@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, Alert, SafeAreaView, ScrollView } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { supabase } from './lib/supabase';
 import { useNavigation } from '@react-navigation/native';
 import { AuthService, UserProfile } from './services/AuthService';
@@ -62,79 +63,163 @@ export default function ProfileScreen() {
     });
   };
 
+  const MENU_ITEMS = [
+    { id: 'profile', icon: '🧑🏽', title: 'Profile', desc: 'Configure your profile.', action: () => {} },
+    { id: 'beeps', icon: '🚕', title: 'Beeps', desc: "View beeps you've participated in.", action: () => {} },
+    { id: 'ratings', icon: '⭐', title: 'Ratings', desc: 'View your driver and rider ratings.', action: () => {} },
+    { id: 'cars', icon: '🚙', title: 'Cars', desc: 'View your cars used for beeping.', action: () => {} },
+    { id: 'premium', icon: '👑', title: 'Premium', desc: 'Manage your premium subscription.', action: () => {} },
+    { id: 'feedback', icon: '💬', title: 'Feedback', desc: 'Send us your feedback and suggestions.', action: () => {} },
+  ];
+
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" />
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#fff" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={handleImagePick} disabled={uploading}>
-        {profile?.profile_picture_url ? (
-          <Image 
-            source={{ uri: profile.profile_picture_url }} 
-            style={styles.profilePic} 
-          />
-        ) : (
-          <View style={[styles.profilePic, styles.placeholderPic]} />
-        )}
-        {uploading && (
-          <View style={styles.uploadOverlay}>
-            <ActivityIndicator color="#000" />
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.headerTitle}>Profile</Text>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* User Header Section */}
+        <View style={styles.userSection}>
+          <View style={styles.userInfo}>
+            <Text style={styles.nameText}>
+              {profile?.first_name || 'Profile'} {profile?.last_name || ''}
+            </Text>
+            <Text style={styles.emailText}>{profile?.email || 'Loading...'}</Text>
           </View>
-        )}
-      </TouchableOpacity>
-      <Text style={styles.title}>
-        {profile?.first_name || 'Profile'} {profile?.last_name || ''}
-      </Text>
-      {profile?.username && (
-        <Text style={styles.subtitle}>@{profile.username}</Text>
-      )}
-      <Button title="Logout" onPress={handleLogout} color="#ff3b30" />
-    </View>
+
+          <TouchableOpacity onPress={handleImagePick} disabled={uploading}>
+            {profile?.profile_picture_url ? (
+              <Image source={{ uri: profile.profile_picture_url }} style={styles.profilePic} />
+            ) : (
+              <View style={[styles.profilePic, styles.placeholderPic]} />
+            )}
+            {uploading && (
+              <View style={styles.uploadOverlay}>
+                <ActivityIndicator color="#fff" />
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          {MENU_ITEMS.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.menuItem} onPress={item.action}>
+              <Text style={styles.menuIcon}>{item.icon}</Text>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.menuTitle}>{item.title}</Text>
+                <Text style={styles.menuDesc}>{item.desc}</Text>
+              </View>
+              <Icon name="chevron-forward" size={20} color="#666" />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    backgroundColor: '#fff' 
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
   },
-  title: { 
-    fontSize: 24, 
-    marginBottom: 20,
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginVertical: 15,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+  },
+  userSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 40,
+  },
+  userInfo: {
+    flex: 1,
+    paddingRight: 20,
+  },
+  nameText: {
+    color: '#fff',
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333'
+    marginBottom: 5,
+  },
+  emailText: {
+    color: '#aaa',
+    fontSize: 15,
   },
   profilePic: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 20,
-    backgroundColor: '#eee',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#333',
+  },
+  placeholderPic: {
+    backgroundColor: '#333',
   },
   uploadOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  placeholderPic: {
-    backgroundColor: '#ccc',
+  menuContainer: {
+    marginTop: 10,
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 30,
+  },
+  menuIcon: {
+    fontSize: 24,
+    marginRight: 15,
+  },
+  menuTextContainer: {
+    flex: 1,
+  },
+  menuTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  menuDesc: {
+    color: '#888',
+    fontSize: 13,
+  },
+  logoutButton: {
+    marginTop: 20,
+    marginBottom: 40,
+    alignItems: 'center',
+  },
+  logoutText: {
+    color: '#ff453a',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
