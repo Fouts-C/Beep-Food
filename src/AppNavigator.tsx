@@ -1,66 +1,20 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Login from './Login';
 import SignUpScreen from './SignUpScreen';
 import Main from './Main';
-import ProfileScreen from './ProfileScreen';
-import BeepScreen from './BeepScreen';
 import { useColorScheme } from 'react-native';
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+const Drawer = createDrawerNavigator();
 
-function MainTabs() {
+function MainDrawer() {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ focused, color }) => {
-          let iconName = 'circle';
-          if (route.name === 'Ride') iconName = 'car';
-          else if (route.name === 'Beep') iconName = 'steering';
-          else if (route.name === 'Profile') iconName = 'account';
-          return <MaterialCommunityIcons name={iconName} size={28} color={color} />;
-        },
-        tabBarActiveTintColor: '#2f95dc',
-        tabBarInactiveTintColor: '#ffffff',
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-          marginBottom: 4,
-        },
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: 30,
-          left: 20,
-          right: 20,
-          elevation: 0,
-          backgroundColor: '#1E1E1E',
-          borderRadius: 50,
-          height: 70,
-          borderTopWidth: 0,
-          // Shadow for iOS
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.25,
-          shadowRadius: 10,
-        },
-        tabBarItemStyle: {
-          borderRadius: 35,
-          marginHorizontal: 10,
-          marginVertical: 5,
-          padding: 2,
-        },
-        tabBarActiveBackgroundColor: '#333333',
-      })}
-    >
-      <Tab.Screen name="Ride" component={Main} />
-      <Tab.Screen name="Beep" component={BeepScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+    <Drawer.Navigator initialRouteName="Menu">
+      <Drawer.Screen name="Menu" component={Main} />
+      {/* Add other screens to the drawer if needed */}
+    </Drawer.Navigator>
   );
 }
 
@@ -78,7 +32,7 @@ export default function AppNavigator() {
           title: 'Sign Up',
         }}
       />
-      <Stack.Screen name="MainDrawer" component={MainTabs} />
+      <Stack.Screen name="MainDrawer" component={MainDrawer} />
     </Stack.Navigator>
   );
 }
