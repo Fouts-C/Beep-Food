@@ -20,7 +20,7 @@ function MainTabs() {
         headerShown: false,
         tabBarIcon: ({ focused, color }) => {
           let iconName = 'circle';
-          if (route.name === 'Ride') iconName = 'car';
+          if (route.name === 'Order') iconName = 'shopping-outline';
           else if (route.name === 'Beep') iconName = 'steering';
           else if (route.name === 'Profile') iconName = 'account';
           return <MaterialCommunityIcons name={iconName} size={28} color={color} />;
@@ -36,8 +36,8 @@ function MainTabs() {
         tabBarStyle: {
           position: 'absolute',
           bottom: 30,
-          left: 20,
-          right: 20,
+          left: 50,
+          right: 50,
           elevation: 0,
           backgroundColor: '#1E1E1E',
           borderRadius: 50,
@@ -50,15 +50,15 @@ function MainTabs() {
           shadowRadius: 10,
         },
         tabBarItemStyle: {
-          borderRadius: 35,
-          marginHorizontal: 10,
-          marginVertical: 5,
-          padding: 2,
+          borderRadius: 20,
+          marginHorizontal: 5,
+          marginVertical: 8,
+          paddingBottom: 2,
         },
         tabBarActiveBackgroundColor: '#333333',
       })}
     >
-      <Tab.Screen name="Ride" component={Main} />
+      <Tab.Screen name="Order" component={Main} />
       <Tab.Screen name="Beep" component={BeepScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
