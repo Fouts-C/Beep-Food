@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,78 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { supabase } from './lib/supabase';
+import { AuthService } from './services/AuthService';
 
 export default function BeepScreen() {
   const [car, setCar] = useState('2003 Ford Ranger');
   const [capacity, setCapacity] = useState('10');
   const [singlesRate, setSinglesRate] = useState('6');
   const [groupRate, setGroupRate] = useState('3');
+  const [isBeeping, setIsBeeping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    checkInitialBeepStatus();
+  }, []);
+
+  const checkInitialBeepStatus = async () => {
+    try {
+      const user = await AuthService.getCurrentUser();
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('active_drivers')
+        .select('*')
+        .eq('driver_id', user.id)
+        .single();
+        
+      if (data && data.is_active) {
+        setIsBeeping(true);
+        setCar(data.car);
+        setCapacity(data.capacity.toString());
+        setSinglesRate(data.singles_rate.toString());
+        setGroupRate(data.group_rate.toString());
+      }
+    } catch (e) {
+      console.log('No existing active driver found or error:', e);
+    }
+  };
+
+  const toggleBeeping = async () => {
+    setIsLoading(true);
+    try {
+      const user = await AuthService.getCurrentUser();
+      if (!user) {
+        Alert.alert('Error', 'You must be logged in to beep.');
+        setIsLoading(false);
+        return;
+      }
+      
+      const newStatus = !isBeeping;
+      
+      const { error } = await supabase
+        .from('active_drivers')
+        .upsert({
+          driver_id: user.id,
+          car: car,
+          capacity: parseInt(capacity) || 1,
+          singles_rate: parseFloat(singlesRate) || 0,
+          group_rate: parseFloat(groupRate) || 0,
+          is_active: newStatus
+        });
+
+      if (error) throw error;
+      
+      setIsBeeping(newStatus);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update beeping status');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -24,8 +89,18 @@ export default function BeepScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Beep</Text>
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.startButton}>
-            <Text style={styles.startButtonText}>Start Beeping</Text>
+          <TouchableOpacity 
+            style={[styles.startButton, isBeeping && styles.stopButton]} 
+            onPress={toggleBeeping}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.startButtonText}>
+                {isBeeping ? 'Stop Beeping' : 'Start Beeping'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -130,6 +205,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 25,
+  },
+  stopButton: {
+    backgroundColor: '#EF4444', // Red for stop
   },
   startButtonText: {
     color: '#ffffff',

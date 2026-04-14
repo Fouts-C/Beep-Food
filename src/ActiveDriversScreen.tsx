@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,49 +8,76 @@ import {
   FlatList,
   Image,
   useColorScheme,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-
-// Mock Data
-const ACTIVE_DRIVERS = [
-  {
-    id: '1',
-    name: 'Sarah Jenkins',
-    rating: '4.9',
-    distance: '0.8 miles away',
-    car: 'Silver Toyota Camry',
-    image: 'https://i.pravatar.cc/150?img=1'
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    rating: '4.7',
-    distance: '1.2 miles away',
-    car: 'Black Honda Accord',
-    image: 'https://i.pravatar.cc/150?img=11'
-  },
-  {
-    id: '3',
-    name: 'David Rodriguez',
-    rating: '5.0',
-    distance: '2.5 miles away',
-    car: 'White Tesla Model 3',
-    image: 'https://i.pravatar.cc/150?img=12'
-  },
-  {
-    id: '4',
-    name: 'Emma Wilson',
-    rating: '4.8',
-    distance: '3.1 miles away',
-    car: 'Blue Ford Fusion',
-    image: 'https://i.pravatar.cc/150?img=5'
-  }
-];
+import { supabase } from './lib/supabase';
 
 export default function ActiveDriversScreen() {
   const navigation = useNavigation();
   const isDarkMode = useColorScheme() === 'dark';
+  const [activeDrivers, setActiveDrivers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchActiveDrivers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('active_drivers')
+        .select(`
+          driver_id,
+          car,
+          is_active,
+          profiles (
+            first_name,
+            last_name,
+            profile_picture_url
+          )
+        `)
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error fetching drivers:', error);
+        return;
+      }
+
+      if (data) {
+        const formattedDrivers = data.map((d: any) => ({
+          id: d.driver_id,
+          name: d.profiles ? `${d.profiles.first_name} ${d.profiles.last_name}` : 'Unknown Driver',
+          rating: '5.0', // Placeholder
+          distance: 'Calculating...', // Placeholder since location isn't implemented
+          car: d.car,
+          image: d.profiles?.profile_picture_url || 'https://i.pravatar.cc/150?img=1'
+        }));
+        setActiveDrivers(formattedDrivers);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveDrivers();
+
+    const channel = supabase
+      .channel('active_drivers_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'active_drivers' },
+        (payload) => {
+          console.log('Realtime change received!', payload);
+          fetchActiveDrivers(); // Simplest way to handle joins is to refetch
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const theme = {
     background: isDarkMode ? '#121212' : '#F7F9FC',
@@ -116,13 +143,23 @@ export default function ActiveDriversScreen() {
         <Text style={[styles.radarText, { color: theme.textSecondary }]}>Scanning for nearby drivers...</Text>
       </View>
 
-      <FlatList
-        data={ACTIVE_DRIVERS}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      ) : activeDrivers.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>No active beeps right now.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={activeDrivers}
+          keyExtractor={item => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 }
