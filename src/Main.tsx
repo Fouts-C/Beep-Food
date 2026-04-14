@@ -25,7 +25,7 @@ export default function Main() {
   const navigation = useNavigation();
   //isDarkMode will hold true if the device is set to dark mode
   const isDarkMode = useColorScheme() === 'dark';
-  
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? '#000' : '#fff',
   };
@@ -81,6 +81,13 @@ export default function Main() {
         onChangeText={setItems}
         multiline
       />
+
+      <TouchableOpacity
+        style={styles.findDeliverButton}
+        onPress={() => navigation.navigate('ActiveDrivers' as never)}
+      >
+        <Text style={styles.findDeliverButtonText}>Find Deliver</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -111,5 +118,24 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     fontSize: 16,
+  },
+  findDeliverButton: {
+    backgroundColor: '#FFCC00',
+    marginHorizontal: 20,
+    marginTop: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    //shadowColor: '#000000ff',
+    //shadowOffset: { width: 0, height: 4 },
+    //shadowOpacity: 0.3,
+    //shadowRadius: 6,
+    //elevation: 4,
+  },
+  findDeliverButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });

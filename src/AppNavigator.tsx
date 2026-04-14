@@ -7,6 +7,7 @@ import SignUpScreen from './SignUpScreen';
 import Main from './Main';
 import ProfileScreen from './ProfileScreen';
 import BeepScreen from './BeepScreen';
+import ActiveDriversScreen from './ActiveDriversScreen';
 import { useColorScheme } from 'react-native';
 
 const Stack = createNativeStackNavigator();
@@ -79,6 +80,7 @@ export default function AppNavigator() {
         }}
       />
       <Stack.Screen name="MainDrawer" component={MainTabs} />
+      <Stack.Screen name="ActiveDrivers" component={ActiveDriversScreen} />
     </Stack.Navigator>
   );
 }
