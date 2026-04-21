@@ -69,7 +69,7 @@ export default function Main() {
 
       <TouchableOpacity
         style={styles.findDeliverButton}
-        onPress={() => navigation.navigate('ActiveDrivers' as never)}
+        onPress={() => navigation.navigate('ActiveDrivers' as never, { pickupLocation, items } as never)}
       >
         <Text style={styles.findDeliverButtonText}>Find Driver</Text>
       </TouchableOpacity>

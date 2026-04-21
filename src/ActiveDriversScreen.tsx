@@ -9,16 +9,21 @@ import {
   Image,
   useColorScheme,
   ActivityIndicator,
+  DeviceEventEmitter,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { supabase } from './lib/supabase';
 
 export default function ActiveDriversScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { pickupLocation, items } = (route.params as any) || { pickupLocation: 'Current Location', items: 'Standard Order' };
+  
   const isDarkMode = useColorScheme() === 'dark';
   const [activeDrivers, setActiveDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [requestedDriverId, setRequestedDriverId] = useState<string | null>(null);
 
   const fetchActiveDrivers = async () => {
     try {
@@ -89,7 +94,22 @@ export default function ActiveDriversScreen() {
     border: isDarkMode ? '#27272A' : '#E5E7EB',
   };
 
-  const renderItem = ({ item }: { item: any }) => (
+  const handleRequestDriver = (driverId: string) => {
+    setRequestedDriverId(driverId);
+    
+    // Dispatch mock order
+    DeviceEventEmitter.emit('MOCK_NEW_ORDER', {
+      id: Math.random().toString(),
+      customerName: 'You',
+      pickupLocation: pickupLocation,
+      items: items,
+      status: 'pending'
+    });
+  };
+
+  const renderItem = ({ item }: { item: any }) => {
+    const isRequested = requestedDriverId === item.id;
+    return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.cardHeader}>
         <View style={styles.avatarContainer}>
@@ -105,8 +125,12 @@ export default function ActiveDriversScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={[styles.requestButton, { backgroundColor: theme.primary }]}>
-          <Text style={styles.requestButtonText}>Request</Text>
+        <TouchableOpacity 
+          style={[styles.requestButton, { backgroundColor: isRequested ? '#22c55e' : theme.primary }]}
+          onPress={() => handleRequestDriver(item.id)}
+          disabled={isRequested}
+        >
+          <Text style={styles.requestButtonText}>{isRequested ? 'Requested ✓' : 'Request'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -123,7 +147,7 @@ export default function ActiveDriversScreen() {
         </View>
       </View>
     </View>
-  );
+  )};
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>

@@ -11,19 +11,62 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  DeviceEventEmitter,
 } from 'react-native';
 import { supabase } from './lib/supabase';
 import { AuthService } from './services/AuthService';
 
+interface Order {
+  id: string;
+  customerName: string;
+  pickupLocation: string;
+  items: string;
+  status: 'pending' | 'accepted' | 'denied';
+}
+
 export default function BeepScreen() {
-  const [car, setCar] = useState('2003 Ford Ranger');
-  const [capacity, setCapacity] = useState('10');
   const [deliveryRate, setDeliveryRate] = useState('6');
   const [isBeeping, setIsBeeping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  //Mock Orders Data
+  const [orders, setOrders] = useState<Order[]>([
+    /*{
+      id: '1',
+      customerName: 'Alice',
+      pickupLocation: 'Chick-fil-A',
+      items: 'Spicy Chicken Sandwich, Medium Waffle Fries',
+      status: 'pending'
+    },
+    {
+      id: '2',
+      customerName: 'Bob',
+      pickupLocation: 'Starbucks',
+      items: 'Venti Iced Caramel Macchiato',
+      status: 'pending'
+    }*/
+  ]);
+
+  const handleAcceptOrder = (id: string) => {
+    setOrders(orders.map(o => o.id === id ? { ...o, status: 'accepted' } : o));
+  };
+
+  const handleDenyOrder = (id: string) => {
+    // We could mark it as denied, or just remove it from the screen for now
+    setOrders(orders.filter(o => o.id !== id));
+  };
+
   useEffect(() => {
     checkInitialBeepStatus();
+    
+    // Listen for incoming mock orders globally
+    const orderListener = DeviceEventEmitter.addListener('MOCK_NEW_ORDER', (newOrder: Order) => {
+      setOrders(prevOrders => [...prevOrders, newOrder]);
+    });
+
+    return () => {
+      orderListener.remove();
+    };
   }, []);
 
   const checkInitialBeepStatus = async () => {
@@ -35,11 +78,9 @@ export default function BeepScreen() {
         .select('*')
         .eq('driver_id', user.id)
         .single();
-        
+
       if (data && data.is_active) {
         setIsBeeping(true);
-        setCar(data.car);
-        setCapacity(data.capacity.toString());
         setDeliveryRate(data.singles_rate.toString());
       }
     } catch (e) {
@@ -56,22 +97,22 @@ export default function BeepScreen() {
         setIsLoading(false);
         return;
       }
-      
+
       const newStatus = !isBeeping;
-      
+
       const { error } = await supabase
         .from('active_drivers')
         .upsert({
           driver_id: user.id,
-          car: car,
-          capacity: parseInt(capacity) || 1,
+          car: "N/A", // Default fallback for deprecated column
+          capacity: 1, // Default fallback
           singles_rate: parseFloat(deliveryRate) || 0,
           group_rate: 0,
           is_active: newStatus
         });
 
       if (error) throw error;
-      
+
       setIsBeeping(newStatus);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update beeping status');
@@ -87,8 +128,8 @@ export default function BeepScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Beep</Text>
         <View style={styles.headerRight}>
-          <TouchableOpacity 
-            style={[styles.startButton, isBeeping && styles.stopButton]} 
+          <TouchableOpacity
+            style={[styles.startButton, isBeeping && styles.stopButton]}
             onPress={toggleBeeping}
             disabled={isLoading}
           >
@@ -104,36 +145,6 @@ export default function BeepScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Car Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Car</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={car}
-              onChangeText={setCar}
-              placeholderTextColor="#888"
-            />
-          </View>
-        </View>
-
-        {/* Max Rider Capacity Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Max Rider Capacity</Text>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              value={capacity}
-              onChangeText={setCapacity}
-              keyboardType="numeric"
-              placeholderTextColor="#888"
-            />
-          </View>
-          <Text style={styles.subtext}>
-            Maximum number of riders you can safely fit in your car
-          </Text>
-        </View>
-
         {/* Delivery Rate Section */}
         <View style={styles.section}>
           <Text style={styles.label}>Delivery Rate</Text>
@@ -150,6 +161,47 @@ export default function BeepScreen() {
           <Text style={styles.subtext}>
             Price for delivering a food order
           </Text>
+        </View>
+
+        {/* Orders Section */}
+        <View style={styles.section}>
+          <Text style={styles.label}>Incoming Orders</Text>
+          {!isBeeping ? (
+            <Text style={styles.subtext}>Start beeping to view incoming orders...</Text>
+          ) : orders.length === 0 ? (
+            <Text style={styles.subtext}>No pending orders right now.</Text>
+          ) : (
+            orders.map(order => (
+              <View key={order.id} style={styles.orderCard}>
+                <View style={styles.orderHeader}>
+                  <Text style={styles.orderLocation}>{order.pickupLocation}</Text>
+                  <Text style={styles.orderCustomer}>{order.customerName}</Text>
+                </View>
+                <Text style={styles.orderItems}>{order.items}</Text>
+
+                {order.status === 'pending' ? (
+                  <View style={styles.orderActions}>
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.denyButton]}
+                      onPress={() => handleDenyOrder(order.id)}
+                    >
+                      <Text style={styles.denyButtonText}>Deny</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.acceptOrderButton]}
+                      onPress={() => handleAcceptOrder(order.id)}
+                    >
+                      <Text style={styles.acceptButtonText}>Accept</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusText}>ACCEPTED</Text>
+                  </View>
+                )}
+              </View>
+            ))
+          )}
         </View>
 
         {/* Additional padding to clear the absolute tab bar */}
@@ -243,5 +295,75 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     fontSize: 14,
     marginTop: 8,
+  },
+  orderCard: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  orderLocation: {
+    color: '#FFCC00',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  orderCustomer: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  orderItems: {
+    color: '#cccccc',
+    fontSize: 15,
+    marginBottom: 16,
+  },
+  orderActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  denyButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#EF4444',
+    marginRight: 8,
+  },
+  acceptOrderButton: {
+    backgroundColor: '#FFCC00',
+    marginLeft: 8,
+  },
+  denyButtonText: {
+    color: '#EF4444',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  acceptButtonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statusBadge: {
+    backgroundColor: '#22c55e20', // transparent green tint
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#22c55e',
+  },
+  statusText: {
+    color: '#22c55e',
+    fontWeight: 'bold',
   },
 });
