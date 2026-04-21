@@ -8,7 +8,7 @@ import Main from './Main';
 import ProfileScreen from './ProfileScreen';
 import BeepScreen from './BeepScreen';
 import ActiveDriversScreen from './ActiveDriversScreen';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, TouchableOpacity } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,12 +36,13 @@ function MainTabs() {
         tabBarStyle: {
           position: 'absolute',
           bottom: 30,
-          left: 50,
-          right: 50,
+          left: '15%',
+          right: '15%',
           elevation: 0,
           backgroundColor: '#1E1E1E',
-          borderRadius: 50,
+          borderRadius: 35,
           height: 70,
+          paddingBottom: 0,
           borderTopWidth: 0,
           // Shadow for iOS
           shadowColor: '#000',
@@ -49,13 +50,20 @@ function MainTabs() {
           shadowOpacity: 0.25,
           shadowRadius: 10,
         },
-        tabBarItemStyle: {
-          borderRadius: 20,
-          marginHorizontal: 5,
-          marginVertical: 8,
-          paddingBottom: 2,
-        },
-        tabBarActiveBackgroundColor: '#333333',
+        tabBarButton: (props) => (
+          <TouchableOpacity
+            {...(props as any)}
+            style={[
+              props.style,
+              {
+                borderRadius: 30,
+                marginHorizontal: 4,
+                marginVertical: 8,
+                backgroundColor: props.accessibilityState?.selected ? '#333333' : 'transparent',
+              },
+            ]}
+          />
+        ),
       })}
     >
       <Tab.Screen name="Order" component={Main} />

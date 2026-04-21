@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { AuthService } from './services/AuthService';
 import appleAuth from '@invertase/react-native-apple-authentication';
@@ -72,12 +73,13 @@ function Login({ navigation }: { navigation: any }): React.JSX.Element {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" />
       <Text style={styles.title}>Beep Food App 🚕</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#aaa"
+        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -88,7 +90,7 @@ function Login({ navigation }: { navigation: any }): React.JSX.Element {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#aaa"
+        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -102,7 +104,7 @@ function Login({ navigation }: { navigation: any }): React.JSX.Element {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="#000" />
+          <ActivityIndicator color="#ffffff" />
         ) : (
           <Text style={styles.loginBtnText}>Login</Text>
         )}
@@ -146,7 +148,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#000000',
   },
   title: {
     fontSize: 28,
@@ -154,24 +156,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     marginLeft: 10,
     textAlign: 'left',
+    color: '#ffffff',
   },
   input: {
     height: 50,
-    borderColor: '#ccc',
-    borderWidth: 2,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderColor: '#333333',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 16,
     marginBottom: 16,
     marginLeft: 10,
     marginRight: 10,
-    backgroundColor: 'white',
+    backgroundColor: '#1E1E1E',
+    color: '#ffffff',
   },
   loginBtn: {
     width: '95%',
-    backgroundColor: '#f5f5f5',
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 12,
+    backgroundColor: '#FFCC00',
+    borderRadius: 25,
     paddingVertical: 12,
     marginLeft: 10,
     alignItems: 'center',
@@ -179,15 +181,15 @@ const styles = StyleSheet.create({
   loginBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: '#ffffff',
   },
   disabledBtn: {
     opacity: 0.5,
   },
   appleBtn: {
     width: '95%',
-    backgroundColor: '#000',
-    borderRadius: 12,
+    backgroundColor: '#333333',
+    borderRadius: 25,
     paddingVertical: 12,
     marginLeft: 10,
     marginTop: 16,

@@ -18,8 +18,7 @@ import { AuthService } from './services/AuthService';
 export default function BeepScreen() {
   const [car, setCar] = useState('2003 Ford Ranger');
   const [capacity, setCapacity] = useState('10');
-  const [singlesRate, setSinglesRate] = useState('6');
-  const [groupRate, setGroupRate] = useState('3');
+  const [deliveryRate, setDeliveryRate] = useState('6');
   const [isBeeping, setIsBeeping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,8 +40,7 @@ export default function BeepScreen() {
         setIsBeeping(true);
         setCar(data.car);
         setCapacity(data.capacity.toString());
-        setSinglesRate(data.singles_rate.toString());
-        setGroupRate(data.group_rate.toString());
+        setDeliveryRate(data.singles_rate.toString());
       }
     } catch (e) {
       console.log('No existing active driver found or error:', e);
@@ -67,8 +65,8 @@ export default function BeepScreen() {
           driver_id: user.id,
           car: car,
           capacity: parseInt(capacity) || 1,
-          singles_rate: parseFloat(singlesRate) || 0,
-          group_rate: parseFloat(groupRate) || 0,
+          singles_rate: parseFloat(deliveryRate) || 0,
+          group_rate: 0,
           is_active: newStatus
         });
 
@@ -136,38 +134,22 @@ export default function BeepScreen() {
           </Text>
         </View>
 
-        {/* Singles Rate Section */}
+        {/* Delivery Rate Section */}
         <View style={styles.section}>
-          <Text style={styles.label}>Singles Rate</Text>
+          <Text style={styles.label}>Delivery Rate</Text>
           <View style={styles.inputContainerWithPrefix}>
             <Text style={styles.currencyPrefix}>$</Text>
             <TextInput
               style={styles.inputWithPrefix}
-              value={singlesRate}
-              onChangeText={setSinglesRate}
+              value={deliveryRate}
+              onChangeText={setDeliveryRate}
               keyboardType="numeric"
               placeholderTextColor="#888"
             />
           </View>
           <Text style={styles.subtext}>
-            Price for a single person riding alone
+            Price for delivering a food order
           </Text>
-        </View>
-
-        {/* Group Rate Section */}
-        <View style={styles.section}>
-          <Text style={styles.label}>Group Rate</Text>
-          <View style={styles.inputContainerWithPrefix}>
-            <Text style={styles.currencyPrefix}>$</Text>
-            <TextInput
-              style={styles.inputWithPrefix}
-              value={groupRate}
-              onChangeText={setGroupRate}
-              keyboardType="numeric"
-              placeholderTextColor="#888"
-            />
-          </View>
-          <Text style={styles.subtext}>Price per person in a group</Text>
         </View>
 
         {/* Additional padding to clear the absolute tab bar */}
@@ -186,19 +168,17 @@ const styles = StyleSheet.create({
     height: 70,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     marginBottom: 10,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#ffffff',
   },
   headerRight: {
-    position: 'absolute',
-    right: 20,
   },
   startButton: {
     backgroundColor: '#FFCC00', // Bright blue matching the design
