@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TextInput,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   StatusBar,
@@ -22,6 +23,7 @@ export default function Main() {
   });
 
   const [pickupLocation, setPickupLocation] = useState('');
+  const [deliveryLocation, setDeliveryLocation] = useState('');
   const [items, setItems] = useState('');
   const navigation = useNavigation();
   useEffect(() => {
@@ -50,29 +52,44 @@ export default function Main() {
         <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} />
       </MapView>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Enter pickup location (e.g. Chick-fil-A)"
-        placeholderTextColor="#888"
-        value={pickupLocation}
-        onChangeText={setPickupLocation}
-      />
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <Text style={styles.label}>Pickup Location</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="e.g. Chick-fil-A"
+          placeholderTextColor="#888"
+          value={pickupLocation}
+          onChangeText={setPickupLocation}
+        />
 
-      <TextInput
-        style={[styles.input, { height: 80 }]}
-        placeholder="Enter items to be picked up (e.g. Coffee, Fries)"
-        placeholderTextColor="#888"
-        value={items}
-        onChangeText={setItems}
-        multiline
-      />
+        <Text style={styles.label}>Delivery Location</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="e.g. 123 Rivers St"
+          placeholderTextColor="#888"
+          value={deliveryLocation}
+          onChangeText={setDeliveryLocation}
+        />
 
-      <TouchableOpacity
-        style={styles.findDeliverButton}
-        onPress={() => navigation.navigate('ActiveDrivers' as never, { pickupLocation, items } as never)}
-      >
-        <Text style={styles.findDeliverButtonText}>Find Driver</Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>Items</Text>
+        <TextInput
+          style={[styles.input, { height: 56 }]}
+          placeholder="e.g. Coffee, Fries"
+          placeholderTextColor="#888"
+          value={items}
+          onChangeText={setItems}
+          multiline
+        />
+
+        <TouchableOpacity
+          style={styles.findDeliverButton}
+          onPress={() => (navigation as any).navigate('ActiveDrivers', { pickupLocation, deliveryLocation, items })}
+        >
+          <Text style={styles.findDeliverButtonText}>Find Driver</Text>
+        </TouchableOpacity>
+
+        <View style={{ height: 120 }} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -94,11 +111,21 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '40%',
   },
+  scrollContent: {
+    paddingTop: 4,
+  },
+  label: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 6,
+  },
   input: {
     backgroundColor: '#1E1E1E',
     color: '#ffffff',
     marginHorizontal: 20,
-    marginTop: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
@@ -109,7 +136,7 @@ const styles = StyleSheet.create({
   findDeliverButton: {
     backgroundColor: '#FFCC00',
     marginHorizontal: 20,
-    marginTop: 24,
+    marginTop: 20,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
-  useColorScheme,
   ActivityIndicator,
   DeviceEventEmitter,
+  StatusBar,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -18,9 +18,8 @@ import { supabase } from './lib/supabase';
 export default function ActiveDriversScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { pickupLocation, items } = (route.params as any) || { pickupLocation: 'Current Location', items: 'Standard Order' };
+  const { pickupLocation, deliveryLocation, items } = (route.params as any) || { pickupLocation: 'Current Location', deliveryLocation: '', items: 'Standard Order' };
   
-  const isDarkMode = useColorScheme() === 'dark';
   const [activeDrivers, setActiveDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestedDriverId, setRequestedDriverId] = useState<string | null>(null);
@@ -47,14 +46,20 @@ export default function ActiveDriversScreen() {
       }
 
       if (data) {
-        const formattedDrivers = data.map((d: any) => ({
-          id: d.driver_id,
-          name: d.profiles ? `${d.profiles.first_name} ${d.profiles.last_name}` : 'Unknown Driver',
-          rating: '5.0', // Placeholder
-          distance: 'Calculating...', // Placeholder since location isn't implemented
-          car: d.car,
-          image: d.profiles?.profile_picture_url || 'https://i.pravatar.cc/150?img=1'
-        }));
+        const formattedDrivers = data.map((d: any) => {
+          const firstName = d.profiles?.first_name || '';
+          const lastName = d.profiles?.last_name || '';
+          const displayName = `${firstName} ${lastName}`.trim();
+          
+          return {
+            id: d.driver_id,
+            name: displayName.length > 0 ? displayName : (d.profiles?.username || 'Unknown Driver'),
+            rating: '5.0', // Placeholder
+            distance: 'Calculating...', // Placeholder since location isn't implemented
+            car: d.car,
+            image: d.profiles?.profile_picture_url || 'https://i.pravatar.cc/150?img=1'
+          };
+        });
         setActiveDrivers(formattedDrivers);
       }
     } catch (error) {
@@ -85,13 +90,13 @@ export default function ActiveDriversScreen() {
   }, []);
 
   const theme = {
-    background: isDarkMode ? '#121212' : '#F7F9FC',
-    card: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    text: isDarkMode ? '#FFFFFF' : '#111827',
-    textSecondary: isDarkMode ? '#A1A1AA' : '#6B7280',
-    primary: '#4F46E5', // Indigo
-    accent: '#10B981', // Emerald for active dot
-    border: isDarkMode ? '#27272A' : '#E5E7EB',
+    background: '#000000',
+    card: '#1E1E1E',
+    text: '#ffffff',
+    textSecondary: '#8E8E93',
+    primary: '#FFCC00',
+    accent: '#22c55e',
+    border: '#333333',
   };
 
   const handleRequestDriver = (driverId: string) => {
@@ -102,6 +107,7 @@ export default function ActiveDriversScreen() {
       id: Math.random().toString(),
       customerName: 'You',
       pickupLocation: pickupLocation,
+      deliveryLocation: deliveryLocation,
       items: items,
       status: 'pending'
     });
@@ -130,7 +136,7 @@ export default function ActiveDriversScreen() {
           onPress={() => handleRequestDriver(item.id)}
           disabled={isRequested}
         >
-          <Text style={styles.requestButtonText}>{isRequested ? 'Requested ✓' : 'Request'}</Text>
+          <Text style={[styles.requestButtonText, { color: isRequested ? '#fff' : '#000' }]}>{isRequested ? 'Requested ✓' : 'Request'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -151,8 +157,9 @@ export default function ActiveDriversScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" />
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.backButton, { backgroundColor: theme.card, borderColor: theme.border }]}
           onPress={() => navigation.goBack()}
         >
@@ -207,15 +214,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
   },
   placeholder: {
     width: 44,
@@ -237,15 +239,10 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -286,12 +283,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   requestButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 25,
   },
   requestButtonText: {
-    color: '#FFF',
     fontSize: 14,
     fontWeight: '600',
   },

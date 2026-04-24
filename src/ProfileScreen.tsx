@@ -64,7 +64,7 @@ export default function ProfileScreen() {
   };
 
   const MENU_ITEMS = [
-    { id: 'profile', icon: '🧑🏽', title: 'Profile', desc: 'Configure your profile.', action: () => {} },
+    { id: 'profile', icon: '🧑🏽', title: 'Profile', desc: 'Configure your profile.', action: () => navigation.navigate('EditProfile') },
     { id: 'beeps', icon: '🚕', title: 'Beeps', desc: "View beeps you've participated in.", action: () => {} },
     { id: 'ratings', icon: '⭐', title: 'Ratings', desc: 'View your driver and rider ratings.', action: () => {} },
     { id: 'cars', icon: '🚙', title: 'Cars', desc: 'View your cars used for beeping.', action: () => {} },

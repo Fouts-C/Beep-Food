@@ -8,6 +8,7 @@ import Main from './Main';
 import ProfileScreen from './ProfileScreen';
 import BeepScreen from './BeepScreen';
 import ActiveDriversScreen from './ActiveDriversScreen';
+import EditProfileScreen from './EditProfileScreen';
 import { useColorScheme, TouchableOpacity } from 'react-native';
 
 const Stack = createNativeStackNavigator();
@@ -89,6 +90,7 @@ export default function AppNavigator() {
       />
       <Stack.Screen name="MainDrawer" component={MainTabs} />
       <Stack.Screen name="ActiveDrivers" component={ActiveDriversScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
     </Stack.Navigator>
   );
 }
