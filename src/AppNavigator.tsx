@@ -80,14 +80,7 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen
-        name="SignUp"
-        component={SignUpScreen}
-        options={{
-          headerShown: true,
-          title: 'Sign Up',
-        }}
-      />
+      <Stack.Screen name="SignUp" component={SignUpScreen} />
       <Stack.Screen name="MainDrawer" component={MainTabs} />
       <Stack.Screen name="ActiveDrivers" component={ActiveDriversScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />

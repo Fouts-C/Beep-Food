@@ -20,6 +20,7 @@ interface Order {
   id: string;
   customerName: string;
   pickupLocation: string;
+  deliveryLocation: string;
   items: string;
   status: 'pending' | 'accepted' | 'denied';
 }
@@ -58,7 +59,7 @@ export default function BeepScreen() {
 
   useEffect(() => {
     checkInitialBeepStatus();
-    
+
     // Listen for incoming mock orders globally
     const orderListener = DeviceEventEmitter.addListener('MOCK_NEW_ORDER', (newOrder: Order) => {
       setOrders(prevOrders => [...prevOrders, newOrder]);
@@ -173,11 +174,22 @@ export default function BeepScreen() {
           ) : (
             orders.map(order => (
               <View key={order.id} style={styles.orderCard}>
-                <View style={styles.orderHeader}>
-                  <Text style={styles.orderLocation}>{order.pickupLocation}</Text>
-                  <Text style={styles.orderCustomer}>{order.customerName}</Text>
+                <Text style={styles.orderCustomer}>{order.customerName}</Text>
+
+                <View style={styles.orderLocationRow}>
+                  <Text style={styles.orderLocationLabel}>Pickup</Text>
+                  <Text style={styles.orderLocationValue}>{order.pickupLocation}</Text>
                 </View>
-                <Text style={styles.orderItems}>{order.items}</Text>
+
+                <View style={styles.orderLocationRow}>
+                  <Text style={styles.orderLocationLabel}>Deliver to</Text>
+                  <Text style={styles.orderLocationValue}>{order.deliveryLocation || 'Not specified'}</Text>
+                </View>
+
+                <View style={styles.orderItemsContainer}>
+                  <Text style={styles.orderLocationLabel}>Items</Text>
+                  <Text style={styles.orderItems}>{order.items}</Text>
+                </View>
 
                 {order.status === 'pending' ? (
                   <View style={styles.orderActions}>
@@ -304,25 +316,41 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333333',
   },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  orderLocation: {
-    color: '#FFCC00',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
   orderCustomer: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  orderLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    gap: 8,
+  },
+  orderLocationLabel: {
+    color: '#FFCC00',
+    fontSize: 13,
+    fontWeight: '700',
+    width: 72,
+    paddingTop: 1,
+  },
+  orderLocationValue: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '500',
+    flex: 1,
+  },
+  orderItemsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    gap: 8,
   },
   orderItems: {
     color: '#cccccc',
     fontSize: 15,
-    marginBottom: 16,
+    flex: 1,
   },
   orderActions: {
     flexDirection: 'row',

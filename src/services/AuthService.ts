@@ -44,7 +44,7 @@ export const AuthService = {
             try {
                 const fileExt = profilePicMimeType.split('/')[1] || 'jpg';
                 const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-                
+
                 const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('avatars')
                     .upload(`public/${fileName}`, decode(profilePicBase64), {
@@ -97,14 +97,42 @@ export const AuthService = {
     },
 
     /**
-     * Sign in with Apple (OAuth)
+     * Sign in with Apple using the native identity token from @invertase/react-native-apple-authentication.
+     * Creates a profile row for first-time Apple users since Apple only provides name/email on the first sign-in.
      */
-    async signInWithApple() {
-        const { data, error } = await supabase.auth.signInWithOAuth({
+    async signInWithApple(identityToken: string, appleUser?: {
+        email?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+    }) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
             provider: 'apple',
+            token: identityToken,
         });
 
         if (error) throw error;
+
+        if (data.user) {
+            const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', data.user.id)
+                .single();
+
+            if (!existingProfile) {
+                await supabase.from('profiles').insert({
+                    id: data.user.id,
+                    email: data.user.email || appleUser?.email || '',
+                    first_name: appleUser?.firstName || null,
+                    last_name: appleUser?.lastName || null,
+                    phone: null,
+                    venmo_username: null,
+                    username: null,
+                    profile_picture_url: null,
+                });
+            }
+        }
+
         return data;
     },
 
@@ -191,7 +219,7 @@ export const AuthService = {
         try {
             const fileExt = profilePicMimeType.split('/')[1] || 'jpg';
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-            
+
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('avatars')
                 .upload(`public/${fileName}`, decode(profilePicBase64), {

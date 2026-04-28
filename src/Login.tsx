@@ -10,9 +10,11 @@ import {
   ActivityIndicator,
   Platform,
   StatusBar,
+  Image,
 } from 'react-native';
 import { AuthService } from './services/AuthService';
 import appleAuth from '@invertase/react-native-apple-authentication';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 function Login({ navigation }: { navigation: any }): React.JSX.Element {
   const [email, setEmail] = useState('');
@@ -44,25 +46,29 @@ function Login({ navigation }: { navigation: any }): React.JSX.Element {
 
     setLoading(true);
     try {
-      // Perform Apple Sign In request
-      const appleAuthRequestResponse = await appleAuth.performRequest({
+      const credential = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
       });
 
-      // Get current authentication state
-      const credentialState = await appleAuth.getCredentialStateForUser(
-        appleAuthRequestResponse.user,
-      );
-
-      if (credentialState === appleAuth.State.AUTHORIZED) {
-        // Sign in with Supabase using Apple ID token
-        await AuthService.signInWithApple();
-        navigation.navigate('MainDrawer');
+      if (!credential.identityToken) {
+        throw new Error('Apple Sign-In failed — no identity token returned');
       }
+
+      const credentialState = await appleAuth.getCredentialStateForUser(credential.user);
+      if (credentialState !== appleAuth.State.AUTHORIZED) {
+        throw new Error('Apple credentials are not authorized');
+      }
+
+      await AuthService.signInWithApple(credential.identityToken, {
+        email: credential.email,
+        firstName: credential.fullName?.givenName,
+        lastName: credential.fullName?.familyName,
+      });
+
+      navigation.navigate('MainDrawer');
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
-        // User canceled the sign-in flow
         return;
       }
       Alert.alert('Apple Sign-In Failed', error.message || 'Something went wrong');
@@ -74,145 +80,178 @@ function Login({ navigation }: { navigation: any }): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
-      <Text style={styles.title}>Beep Food App 🚕</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#888"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        editable={!loading}
-      />
+      <View style={styles.header}>
+        <Image
+          source={require('../images/beep_food_icon_final.jpg')}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Beep Food</Text>
+        <Text style={styles.subtitle}>Food delivery for students, without the fees.</Text>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#888"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        editable={!loading}
-      />
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#555"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          editable={!loading}
+        />
 
-      {/* Login Button */}
-      <TouchableOpacity
-        style={[styles.loginBtn, loading && styles.disabledBtn]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#ffffff" />
-        ) : (
-          <Text style={styles.loginBtnText}>Login</Text>
-        )}
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#555"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          editable={!loading}
+        />
 
-      {/* Apple Sign-In Button (iOS only) */}
-      {Platform.OS === 'ios' && (
         <TouchableOpacity
-          style={styles.appleBtn}
-          onPress={handleAppleSignIn}
+          style={styles.forgotLink}
+          onPress={() => navigation.navigate('PasswordReset')}
           disabled={loading}
         >
-          <Text style={styles.appleBtnText}>🍎 Sign in with Apple</Text>
+          <Text style={styles.forgotLinkText}>Forgot Password?</Text>
         </TouchableOpacity>
-      )}
 
-      {/* Sign Up Link */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('SignUp')}
-        style={styles.signUpBtn}
-        disabled={loading}
-      >
-        <Text style={styles.signUpText}>Sign Up</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.loginBtn, loading && styles.disabledBtn]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <Text style={styles.loginBtnText}>Sign In</Text>
+          )}
+        </TouchableOpacity>
 
-      {/* Forgot Password Button */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('PasswordReset')}
-        style={styles.forgotBtn}
-        disabled={loading}
-      >
-        <Text style={styles.signUpText}>Forgot Password</Text>
-      </TouchableOpacity>
+        {Platform.OS === 'ios' && (
+          <TouchableOpacity
+            style={[styles.appleBtn, loading && styles.disabledBtn]}
+            onPress={handleAppleSignIn}
+            disabled={loading}
+          >
+            <View style={styles.appleBtnInner}>
+                <Ionicons name="logo-apple" size={18} color="#ffffff" />
+                <Text style={styles.appleBtnText}>Sign in with Apple</Text>
+              </View>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Don't have an account?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('SignUp')} disabled={loading}>
+          <Text style={styles.signUpText}> Sign Up</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
     backgroundColor: '#000000',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 44,
+  },
+  logo: {
+    width: 110,
+    height: 110,
+    borderRadius: 26,
+    marginBottom: 18,
   },
   title: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: '800',
-    marginBottom: 24,
-    marginLeft: 10,
-    textAlign: 'left',
-    color: '#ffffff',
+    color: '#FFCC00',
+    letterSpacing: 0.4,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666666',
+    fontWeight: '400',
+    letterSpacing: 0.2,
+  },
+  form: {
+    gap: 14,
   },
   input: {
-    height: 50,
-    borderColor: '#333333',
+    height: 52,
+    borderColor: '#222222',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 16,
-    marginBottom: 16,
-    marginLeft: 10,
-    marginRight: 10,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#141414',
     color: '#ffffff',
+    fontSize: 15,
+  },
+  forgotLink: {
+    alignSelf: 'flex-end',
+    marginTop: -2,
+  },
+  forgotLinkText: {
+    color: '#555555',
+    fontSize: 13,
   },
   loginBtn: {
-    width: '95%',
     backgroundColor: '#FFCC00',
-    borderRadius: 25,
-    paddingVertical: 12,
-    marginLeft: 10,
+    borderRadius: 14,
+    paddingVertical: 15,
     alignItems: 'center',
   },
   loginBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#000000',
   },
   disabledBtn: {
     opacity: 0.5,
   },
   appleBtn: {
-    width: '95%',
-    backgroundColor: '#333333',
-    borderRadius: 25,
-    paddingVertical: 12,
-    marginLeft: 10,
-    marginTop: 16,
+    backgroundColor: '#141414',
+    borderRadius: 14,
+    paddingVertical: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#222222',
+  },
+  appleBtnInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   appleBtnText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
+    fontWeight: '600',
+    color: '#ffffff',
   },
-  signUpBtn: {
-    marginTop: 24,
-    marginLeft: 20,
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 36,
+  },
+  footerText: {
+    color: '#555555',
+    fontSize: 14,
   },
   signUpText: {
-    fontSize: 16,
     color: '#FFCC00',
-    fontWeight: '800',
-  },
-  forgotBtn: {
-    marginTop: -17,
-    marginRight: 20,
-    alignSelf: 'flex-end',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 

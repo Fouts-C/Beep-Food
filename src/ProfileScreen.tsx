@@ -65,9 +65,8 @@ export default function ProfileScreen() {
 
   const MENU_ITEMS = [
     { id: 'profile', icon: '🧑🏽', title: 'Profile', desc: 'Configure your profile.', action: () => navigation.navigate('EditProfile') },
-    { id: 'beeps', icon: '🚕', title: 'Beeps', desc: "View beeps you've participated in.", action: () => {} },
+    { id: 'orders', icon: '🧾', title: 'Past Orders', desc: 'View your previous food orders.', action: () => {} },
     { id: 'ratings', icon: '⭐', title: 'Ratings', desc: 'View your driver and rider ratings.', action: () => {} },
-    { id: 'cars', icon: '🚙', title: 'Cars', desc: 'View your cars used for beeping.', action: () => {} },
     { id: 'premium', icon: '👑', title: 'Premium', desc: 'Manage your premium subscription.', action: () => {} },
     { id: 'feedback', icon: '💬', title: 'Feedback', desc: 'Send us your feedback and suggestions.', action: () => {} },
   ];
